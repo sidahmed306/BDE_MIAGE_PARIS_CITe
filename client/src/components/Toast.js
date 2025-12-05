@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 
 const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+
+  const handleClose = useCallback(() => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      onClose();
+    }, 300); // Match animation duration
+  }, [onClose]);
 
   useEffect(() => {
     // Trigger entrance animation
@@ -13,14 +20,7 @@ const Toast = ({ message, type = 'success', onClose, duration = 3000 }) => {
     }, duration);
 
     return () => clearTimeout(timer);
-  }, [duration]);
-
-  const handleClose = () => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      onClose();
-    }, 300); // Match animation duration
-  };
+  }, [duration, handleClose]);
 
   const typeConfig = {
     success: {

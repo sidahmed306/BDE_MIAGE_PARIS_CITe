@@ -38,21 +38,18 @@ const Dashboard = () => {
       title: 'Total Teams',
       value: stats.totalTeams,
       icon: '👥',
-      color: 'bg-blue-500',
       link: '/teams',
     },
     {
       title: 'Total Challenges',
       value: stats.totalChallenges,
       icon: '🎯',
-      color: 'bg-purple-500',
       link: '/challenges',
     },
     {
       title: 'Scores Recorded',
       value: stats.totalScores,
       icon: '🏆',
-      color: 'bg-green-500',
       link: '/scores',
     },
   ];
@@ -75,7 +72,7 @@ const Dashboard = () => {
                 <p className="text-gray-600 text-sm mb-2">{card.title}</p>
                 <p className="text-3xl font-bold text-bordeaux">{card.value}</p>
               </div>
-              <div className={`${card.color} w-16 h-16 rounded-full flex items-center justify-center text-3xl`}>
+              <div className="bg-bordeaux/20 w-16 h-16 rounded-full flex items-center justify-center text-3xl">
                 {card.icon}
               </div>
             </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { teamsAPI } from '../services/api';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
@@ -22,20 +22,29 @@ const Teams = () => {
     color: '#7A1027',
   });
 
-  useEffect(() => {
-    fetchTeams();
-  }, []);
-
-  const fetchTeams = async () => {
+  const fetchTeams = useCallback(async () => {
     try {
       const response = await teamsAPI.getAll();
       setTeams(response.data);
     } catch (error) {
-      showToast('Error loading teams', 'error');
+      console.error('Error loading teams:', error);
+      let errorMessage = 'Erreur lors du chargement des équipes';
+      
+      if (error.response?.status === 401) {
+        errorMessage = 'Vous devez être connecté pour voir les équipes.';
+      } else if (error.response?.status === 403) {
+        errorMessage = 'Accès refusé.';
+      }
+      
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchTeams();
+  }, [fetchTeams]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -46,15 +55,30 @@ const Teams = () => {
     try {
       if (editingTeam) {
         await teamsAPI.update(editingTeam.id, formData);
-        showToast('Team updated successfully!');
+        showToast('Équipe mise à jour avec succès!', 'success');
       } else {
         await teamsAPI.create(formData);
-        showToast('Team created successfully!');
+        showToast('Équipe créée avec succès!', 'success');
       }
       fetchTeams();
       handleCloseModal();
     } catch (error) {
-      showToast('Error saving team', 'error');
+      console.error('Error saving team:', error);
+      let errorMessage = 'Erreur lors de la sauvegarde de l\'équipe';
+      
+      if (error.response?.data) {
+        if (error.response.data.errors && Array.isArray(error.response.data.errors)) {
+          errorMessage = error.response.data.errors.map(err => err.msg).join(', ');
+        } else if (error.response.data.error) {
+          errorMessage = error.response.data.error;
+        } else if (error.response.status === 403) {
+          errorMessage = 'Accès refusé. Seuls les administrateurs peuvent modifier/supprimer des équipes.';
+        } else if (error.response.status === 401) {
+          errorMessage = 'Vous devez être connecté pour effectuer cette action.';
+        }
+      }
+      
+      showToast(errorMessage, 'error');
     }
   };
 
@@ -71,15 +95,28 @@ const Teams = () => {
   const handleDelete = (id) => {
     setConfirmDialog({
       isOpen: true,
-      title: 'Delete Team',
-      message: 'Are you sure you want to delete this team? All associated scores will also be deleted.',
+      title: 'Supprimer l\'équipe',
+      message: 'Êtes-vous sûr de vouloir supprimer cette équipe ? Tous les scores associés seront également supprimés.',
       onConfirm: async () => {
         try {
           await teamsAPI.delete(id);
-          showToast('Team deleted successfully!');
+          showToast('Équipe supprimée avec succès!', 'success');
           fetchTeams();
         } catch (error) {
-          showToast('Error deleting team', 'error');
+          console.error('Error deleting team:', error);
+          let errorMessage = 'Erreur lors de la suppression de l\'équipe';
+          
+          if (error.response?.data) {
+            if (error.response.data.error) {
+              errorMessage = error.response.data.error;
+            } else if (error.response.status === 403) {
+              errorMessage = 'Accès refusé. Seuls les administrateurs peuvent supprimer des équipes.';
+            } else if (error.response.status === 401) {
+              errorMessage = 'Vous devez être connecté pour effectuer cette action.';
+            }
+          }
+          
+          showToast(errorMessage, 'error');
         }
       },
     });

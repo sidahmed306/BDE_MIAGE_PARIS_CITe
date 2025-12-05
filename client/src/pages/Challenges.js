@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { challengesAPI } from '../services/api';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
@@ -22,11 +22,7 @@ const Challenges = () => {
     maxPoints: '',
   });
 
-  useEffect(() => {
-    fetchChallenges();
-  }, []);
-
-  const fetchChallenges = async () => {
+  const fetchChallenges = useCallback(async () => {
     try {
       const response = await challengesAPI.getAll();
       setChallenges(response.data);
@@ -35,7 +31,11 @@ const Challenges = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchChallenges();
+  }, [fetchChallenges]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });

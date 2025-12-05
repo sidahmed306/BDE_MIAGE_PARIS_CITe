@@ -2,14 +2,19 @@
   "name": "nuit-info-gamification",
   "version": "1.0.0",
   "description": "Nuit de l'Info Gamification Tool",
-  "main": "client/src/index.js",
+  "main": "server/index.js",
   "scripts": {
-    "start": "cd client && npm start",
-    "dev": "cd client && npm start",
-    "install-all": "npm install && cd client && npm install"
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm start",
+    "client": "cd client && npm start",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install"
   },
   "keywords": ["nuit-info", "gamification", "competition"],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
 }
 

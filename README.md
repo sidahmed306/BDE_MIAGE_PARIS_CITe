@@ -1,153 +1,144 @@
 # Nuit de l'Info Gamification Tool
 
-A comprehensive web application for managing and enhancing the competitive experience of the Nuit de l'Info coding competition.
+Application web complète pour gérer et améliorer l'expérience compétitive de la Nuit de l'Info avec authentification et base de données SQLite.
 
 ## Features
 
-- 📊 **Dashboard**: Overview of competition status with statistics and leaderboard
-- 👥 **Teams Management**: Create, edit, and manage competition teams
-- 🏆 **Scores Management**: Record and track scores for teams across challenges
-- 🎯 **Challenges Management**: Define and manage competition challenges
-- 🎮 **Gamification**: Badge system and achievements tracking
-- 💾 **Local Storage**: All data persisted in browser localStorage
-- 📥 **Export/Import**: Export and import data as JSON files
+- 📊 **Dashboard**: Vue d'ensemble avec statistiques et leaderboard
+- 👥 **Teams Management**: Créer, éditer et gérer les équipes
+- 🏆 **Scores Management**: Enregistrer et suivre les scores
+- 🎯 **Challenges Management**: Définir et gérer les défis
+- 🎮 **Gamification**: Système de badges et réalisations
+- 🔐 **Authentification**: Système de login/register sécurisé
+- 💾 **SQLite**: Base de données locale persistante
 
 ## Tech Stack
 
-- **Frontend**: React.js with Tailwind CSS
-- **Data Storage**: Browser localStorage with JSON structure
-- **Routing**: React Router
-- **UUID**: For generating unique IDs
+- **Frontend**: React.js avec Tailwind CSS
+- **Backend**: Node.js avec Express.js
+- **Database**: SQLite3
+- **Authentication**: JWT (JSON Web Tokens)
+- **Security**: bcryptjs pour le hashage des mots de passe
 
 ## Installation
 
-1. Install all dependencies:
+1. Installer toutes les dépendances:
 ```bash
 npm run install-all
 ```
 
-Or install client dependencies only:
+2. Configurer les variables d'environnement:
 ```bash
-cd client && npm install
+cd server
+cp .env.example .env
+# Éditer .env et configurer JWT_SECRET
 ```
 
-2. Start the development server:
+3. Démarrer le projet (backend + frontend):
 ```bash
-npm start
+npm run dev
 ```
 
-Or:
+Ou démarrer séparément:
+
 ```bash
-cd client && npm start
+# Terminal 1 - Backend
+npm run server
+
+# Terminal 2 - Frontend
+npm run client
 ```
 
-## Usage
+## Configuration
 
-- Frontend runs on: `http://localhost:4000`
-- All data is stored in browser localStorage
-- Initial data structure is in `client/public/data.json`
+### Variables d'environnement (server/.env)
 
-## Project Structure
+```
+PORT=4001
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRES_IN=24h
+NODE_ENV=development
+```
+
+## Structure du Projet
 
 ```
 nuitInfo/
+├── server/
+│   ├── config/
+│   │   └── database.js        # Configuration SQLite
+│   ├── controllers/          # Contrôleurs (auth, teams, scores, etc.)
+│   ├── middleware/           # Middlewares (auth, validation, errors)
+│   ├── routes/              # Routes API
+│   ├── data/                # Base de données SQLite (créée automatiquement)
+│   ├── index.js             # Point d'entrée serveur
+│   └── package.json
 ├── client/
-│   ├── public/
-│   │   ├── data.json        # Initial data structure
-│   │   └── index.html
 │   ├── src/
-│   │   ├── components/       # Reusable components
-│   │   │   ├── Navbar.js
-│   │   │   ├── Modal.js
-│   │   │   └── Toast.js
-│   │   ├── pages/           # Page components
-│   │   │   ├── Dashboard.js
-│   │   │   ├── Teams.js
-│   │   │   ├── Scores.js
-│   │   │   ├── Challenges.js
-│   │   │   └── Gamification.js
-│   │   ├── services/        # Data service layer
-│   │   │   ├── api.js       # API compatibility layer
-│   │   │   └── dataService.js  # Local storage CRUD operations
-│   │   ├── App.js
-│   │   ├── index.js
-│   │   └── index.css
+│   │   ├── components/      # Composants réutilisables
+│   │   ├── pages/           # Pages (Dashboard, Teams, etc.)
+│   │   ├── services/        # Services API
+│   │   └── App.js
 │   └── package.json
 └── package.json
 ```
 
-## Data Management
+## API Endpoints
 
-### Storage
-- All data is stored in browser **localStorage** under the key `nuit-info-data`
-- Data persists across browser sessions
-- Initial empty structure: `{ teams: [], scores: [], challenges: [] }`
+### Authentication
+- `POST /api/auth/register` - Inscription
+- `POST /api/auth/login` - Connexion
+- `GET /api/auth/me` - Obtenir l'utilisateur actuel (protégé)
 
-### CRUD Operations
-All CRUD operations are performed locally:
-- **Create**: Add new items to localStorage
-- **Read**: Load data from localStorage
-- **Update**: Modify existing items in localStorage
-- **Delete**: Remove items from localStorage
+### Teams (Protégé - Admin)
+- `GET /api/teams` - Liste des équipes
+- `GET /api/teams/:id` - Détails d'une équipe
+- `POST /api/teams` - Créer une équipe
+- `PUT /api/teams/:id` - Modifier une équipe
+- `DELETE /api/teams/:id` - Supprimer une équipe
 
-### Data Export/Import
-The application includes functions to:
-- **Export**: Download current data as JSON file
-- **Import**: Load data from JSON file
-- **Reset**: Clear all stored data
+### Challenges (Protégé - Admin)
+- `GET /api/challenges` - Liste des défis
+- `POST /api/challenges` - Créer un défi
+- `PUT /api/challenges/:id` - Modifier un défi
+- `DELETE /api/challenges/:id` - Supprimer un défi
 
-## Data Structure
+### Scores (Protégé - Admin)
+- `GET /api/scores` - Liste des scores
+- `POST /api/scores` - Créer un score
+- `PUT /api/scores/:id` - Modifier un score
+- `DELETE /api/scores/:id` - Supprimer un score
 
-### Teams
-```json
-{
-  "id": "uuid",
-  "name": "string",
-  "members": "string",
-  "color": "hex color code"
-}
-```
+### Dashboard (Protégé)
+- `GET /api/dashboard/stats` - Statistiques du dashboard
 
-### Scores
-```json
-{
-  "id": "uuid",
-  "teamId": "string",
-  "challengeId": "string",
-  "points": "number",
-  "badge": "string (optional)"
-}
-```
+## Authentification
 
-### Challenges
-```json
-{
-  "id": "uuid",
-  "name": "string",
-  "description": "string",
-  "maxPoints": "number"
-}
-```
+### Rôles
+- **user**: Accès en lecture seule
+- **admin**: Accès complet (CRUD)
 
-## Color Scheme
+### Utilisation
+1. Créer un compte via `/register`
+2. Se connecter via `/login`
+3. Le token JWT est stocké dans localStorage
+4. Toutes les requêtes incluent automatiquement le token
 
-- Primary: Bordeaux (#7A1027)
-- Secondary: Dark Orange (#E2761B)
-- Accent: Light Pink (#D9A8B4)
-- Background: Light Gray (#F2F2F2)
+## Base de données
 
-## Browser Compatibility
+La base de données SQLite est créée automatiquement dans `server/data/database.db` avec les tables suivantes:
+- `users` - Utilisateurs
+- `teams` - Équipes
+- `challenges` - Défis
+- `scores` - Scores
 
-- Modern browsers with localStorage support
-- Chrome, Firefox, Safari, Edge (latest versions)
-- Mobile browsers supported
+## Sécurité
 
-## Notes
-
-- Data is stored locally in your browser
-- Clearing browser data will remove all stored information
-- Use export/import functions to backup your data
-- Each browser has its own separate data storage
+- Mots de passe hashés avec bcryptjs
+- JWT pour l'authentification
+- Validation des données avec express-validator
+- Middleware d'authentification sur toutes les routes
+- Protection CSRF via CORS
 
 ## License
 

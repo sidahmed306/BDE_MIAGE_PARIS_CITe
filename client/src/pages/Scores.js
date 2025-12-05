@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { scoresAPI, teamsAPI, challengesAPI } from '../services/api';
 import Modal from '../components/Modal';
 import Toast from '../components/Toast';
@@ -29,11 +29,7 @@ const Scores = () => {
     badge: '',
   });
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [scoresRes, teamsRes, challengesRes] = await Promise.all([
         scoresAPI.getAll(),
@@ -48,7 +44,11 @@ const Scores = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });

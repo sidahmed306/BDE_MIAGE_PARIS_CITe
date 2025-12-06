@@ -1,36 +1,50 @@
 import axios from 'axios';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4001/api';
+const USE_CREDENTIALS = process.env.REACT_APP_API_USE_CREDENTIALS === 'true';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: USE_CREDENTIALS,
+  timeout: 10000,
 });
 
-// Add token to requests
+// Add token to requests — DO NOT overwrite existing headers
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
+      // ensure headers object exists, but keep existing values
+      config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Handle 401 errors (unauthorized)
+// Log response errors for debugging and emit app event on 401
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('[API] response error', {
+      url: error.config?.url,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message,
+    });
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      try {
+        window.dispatchEvent(new CustomEvent('app:unauthorized', { detail: { url: error.config?.url } }));
+      } catch (e) {
+        /* ignore */
+      }
     }
     return Promise.reject(error);
   }
@@ -43,7 +57,7 @@ export const authAPI = {
   getMe: () => api.get('/auth/me'),
 };
 
-// Teams API
+// Other APIs...
 export const teamsAPI = {
   getAll: () => api.get('/teams'),
   getById: (id) => api.get(`/teams/${id}`),
@@ -52,7 +66,6 @@ export const teamsAPI = {
   delete: (id) => api.delete(`/teams/${id}`),
 };
 
-// Scores API
 export const scoresAPI = {
   getAll: () => api.get('/scores'),
   getById: (id) => api.get(`/scores/${id}`),
@@ -61,7 +74,6 @@ export const scoresAPI = {
   delete: (id) => api.delete(`/scores/${id}`),
 };
 
-// Challenges API
 export const challengesAPI = {
   getAll: () => api.get('/challenges'),
   getById: (id) => api.get(`/challenges/${id}`),
@@ -70,7 +82,6 @@ export const challengesAPI = {
   delete: (id) => api.delete(`/challenges/${id}`),
 };
 
-// Dashboard API
 export const dashboardAPI = {
   getStats: () => api.get('/dashboard/stats'),
 };

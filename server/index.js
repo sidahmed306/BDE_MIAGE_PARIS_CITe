@@ -27,10 +27,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Health check
-app.get('/health', (req, res) => {
-  res.json({ status: 'OK', message: 'Server is running' });
+// ...existing code (imports, middleware, etc.)...
+
+// Health check route
+app.get('/api', (req, res) => {
+  res.json({ ok: true, message: 'API is running' });
 });
 
+// ...existing code (auth routes, teams routes, etc.)...
 // Test endpoint for register API
 app.get('/api/auth/register/test', (req, res) => {
   res.json({ 

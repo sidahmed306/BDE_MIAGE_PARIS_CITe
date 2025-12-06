@@ -12,24 +12,44 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+ // ...existing code...
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('[Login] submit', formData);
     setLoading(true);
 
     try {
-      const response = await authAPI.login(formData);
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      showToast('Login successful!', 'success');
-      setTimeout(() => {
-        navigate('/');
-      }, 1000);
+      // Premier essai : envoyer username
+      let payload = { username: formData.username, password: formData.password };
+      console.log('[Login] trying payload (username):', payload);
+      let response;
+      try {
+        response = await authAPI.login(payload);
+      } catch (err) {
+        console.warn('[Login] username failed, trying email if applicable', err?.response?.status, err?.response?.data);
+        // Essayer avec email (si backend attend "email")
+        payload = { email: formData.username, password: formData.password };
+        console.log('[Login] trying payload (email):', payload);
+        response = await authAPI.login(payload);
+      }
+
+      console.log('[Login] response:', response?.data);
+      if (response?.data?.token) {
+        localStorage.setItem('token', response.data.token);
+        localStorage.setItem('user', JSON.stringify(response.data.user || {}));
+        showToast('Login successful!', 'success');
+        setTimeout(() => navigate('/'), 500);
+      } else {
+        showToast('Login failed: invalid response', 'error');
+      }
     } catch (error) {
-      showToast(error.response?.data?.error || 'Login failed', 'error');
+      console.error('[Login] final error:', error);
+      showToast(error.response?.data?.error || error.message || 'Login failed', 'error');
     } finally {
       setLoading(false);
     }
   };
+// ...existing code...
 
   const showToast = (message, type = 'success') => {
     setToast({ message, type });
@@ -103,4 +123,3 @@ const Login = () => {
 };
 
 export default Login;
-
